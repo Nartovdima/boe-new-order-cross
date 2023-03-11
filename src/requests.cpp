@@ -18,6 +18,49 @@ void encode_new_order_opt_fields(unsigned char * bitfield_start,
 #include "new_order_opt_fields.inl"
 }
 
+unsigned char * encode_new_order_cross_opt_fields(unsigned char * bitfield_start, 
+                                       const std::string & symbol)
+{
+    auto * p = bitfield_start + new_order_cross_opt_bitfield_num();
+#define FIELD(name, bitfield_num, bit)                    \
+    set_opt_field_bit(bitfield_start, bitfield_num, bit); \
+    p = encode_field_##name(p, name);
+#include "new_order_cross_opt_fields.inl"
+    return p;
+}
+
+unsigned char * encode_new_order_cross_multileg_opt_fields(unsigned char * bitfield_start, 
+                                                           const std::string & symbol)
+{
+    auto * p = bitfield_start + new_order_cross_multileg_opt_bitfield_num();
+#define FIELD(name, bitfield_num, bit)                    \
+    set_opt_field_bit(bitfield_start, bitfield_num, bit); \
+    p = encode_field_##name(p, name);
+#include "new_order_cross_multileg_opt_fields.inl"
+    return p;
+}
+
+unsigned char * encode_order_opt_fields(unsigned char * start, 
+                                        const std::string & algoritmic_indicator)
+{
+    auto * p = start;
+#define FIELD(name) \
+    p = encode_field_##name(p, name);
+#include "order_opt_fields.inl"
+    return p;
+}
+
+unsigned char * encode_complex_order_opt_fields(unsigned char * start,
+                                                const std::string & legs,
+                                                const std::string & algoritmic_indicator)
+{
+    auto * p = start;
+#define FIELD(name, _, __) \
+    p = encode_field_##name(p, name);
+#include "complex_order_opt_fields.inl"
+    return p;
+}
+
 uint8_t encode_request_type(const RequestType type)
 {
     switch (type) {
@@ -31,7 +74,10 @@ uint8_t encode_request_type(const RequestType type)
     return 0;
 }
 
-unsigned char * add_request_header(unsigned char * start, unsigned length, const RequestType type, unsigned seq_no)
+unsigned char * add_request_header(unsigned char * start, 
+                                   unsigned length, 
+                                   const RequestType type, 
+                                   unsigned seq_no)
 {
     *start++ = 0xBA;
     *start++ = 0xBA;
@@ -109,6 +155,57 @@ std::string convert_legs(const std::vector<Position> & legs)
     return str;
 }
 
+std::string convert_algoritmic_indicator(const bool algoritmic_indicator) 
+{
+    std::string str;
+    switch (algoritmic_indicator) {
+    case 0: return str.append("N");
+    case 1: return str.append("Y");
+    }
+}
+
+unsigned char * add_request_main_part(unsigned char * start,
+                                      unsigned seq_no,
+                                      const std::string & cross_id,
+                                      double price,
+                                      const std::string & symbol,
+                                      const Order & agency_order,
+                                      unsigned message_length)
+{
+    auto * p = start;
+    p = add_request_header(p, message_length - 2, RequestType::NewCross, seq_no);
+    p = encode_text(p, cross_id, 20);
+    p = encode_char(p, 1);
+    p = encode_char(p, convert_side(agency_order.side));
+    p = encode_price(p, price);
+    return encode_binary4(p, static_cast<uint32_t>(agency_order.volume));
+}
+
+unsigned char * encode_order_main_part(unsigned char * start, const Order & order)
+{
+    auto * p = start;
+    p = encode_char(p, convert_side(order.side));
+    p = encode_binary4(p, order.volume);
+    p = encode_text(p, order.cl_ord_id, 20);
+    p = encode_char(p, convert_capacity(order.capacity));
+    p = encode_alpha(p, order.clearing_firm, 4);
+    return encode_char(p, convert_account_type(order.account_type));
+}
+
+unsigned char * encode_order(unsigned char * start, const Order & order)
+{
+    auto * p = start;
+    p = encode_order_main_part(p, order);
+    return encode_order_opt_fields(p, convert_algoritmic_indicator(order.algorithmic_indicator));
+}
+
+unsigned char * encode_complex_order(unsigned char * start, const ComplexOrder & order)
+{
+    auto * p = start;
+    p = encode_order_main_part(p, order.order);
+    return encode_complex_order_opt_fields(p, convert_legs(order.legs), convert_algoritmic_indicator(order.order.algorithmic_indicator));
+}
+
 } // anonymous namespace
 
 std::array<unsigned char, calculate_size(RequestType::New)> create_new_order_request(const unsigned seq_no,
@@ -143,27 +240,45 @@ std::array<unsigned char, calculate_size(RequestType::New)> create_new_order_req
 }
 
 std::vector<unsigned char> create_new_order_cross_request(
-        unsigned /*seq_no*/,
-        const std::string & /*cross_id*/,
-        double /*price*/,
-        const std::string & /*symbol*/,
-        const Order & /*agency_order*/,
-        const std::vector<Order> & /*contra_orders*/)
+        unsigned seq_no,
+        const std::string & cross_id,
+        double price,
+        const std::string & symbol,
+        const Order & agency_order,
+        const std::vector<Order> & contra_orders)
 {
     std::vector<unsigned char> msg;
     msg.resize(calculate_size(RequestType::NewCross));
+    auto * p = &msg[0];
+    p = add_request_main_part(p, seq_no, cross_id, price, symbol, agency_order, msg.size());
+    p = encode(p, static_cast<uint8_t>(new_order_bitfield_num()));
+    p = encode_new_order_cross_opt_fields(p, symbol);
+    p = encode_binary2(p, static_cast<uint16_t>(contra_orders.size() + 1));
+    p = encode_order(p, agency_order);
+    for (Order contra_order : contra_orders) {
+        p = encode_order(p, contra_order);
+    }
     return msg;
 }
 
 std::vector<unsigned char> create_new_order_cross_multileg_request(
-        unsigned /*seq_no*/,
-        const std::string & /*cross_id*/,
-        double /*price*/,
-        const std::string & /*symbol*/,
-        const ComplexOrder & /*agency_order*/,
-        const std::vector<ComplexOrder> & /*contra_orders*/)
+        unsigned seq_no,
+        const std::string & cross_id,
+        double price,
+        const std::string & symbol,
+        const ComplexOrder & agency_order,
+        const std::vector<ComplexOrder> & contra_orders)
 {
     std::vector<unsigned char> msg;
     msg.resize(calculate_size(RequestType::NewCrossMultileg));
+    auto * p = &msg[0];
+    p = add_request_main_part(p, seq_no, cross_id, price, symbol, agency_order.order, msg.size());
+    p = encode(p, static_cast<uint8_t>(new_order_bitfield_num()));
+    p = encode_new_order_cross_opt_fields(p, symbol);
+    p = encode_binary2(p, static_cast<uint16_t>(contra_orders.size() + 1));
+    p = encode_complex_order(p, agency_order);
+    for (ComplexOrder contra_order : contra_orders) {
+        p = encode_complex_order(p, contra_order);
+    }
     return msg;
 }
