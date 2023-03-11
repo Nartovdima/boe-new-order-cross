@@ -55,7 +55,7 @@ unsigned char * encode_complex_order_opt_fields(unsigned char * start,
                                                 const std::string & algoritmic_indicator)
 {
     auto * p = start;
-#define FIELD(name, _, __) \
+#define FIELD(name) \
     p = encode_field_##name(p, name);
 #include "complex_order_opt_fields.inl"
     return p;
@@ -159,8 +159,8 @@ std::string convert_algoritmic_indicator(const bool algoritmic_indicator)
 {
     std::string str;
     switch (algoritmic_indicator) {
-    case 0: return str.append("N");
-    case 1: return str.append("Y");
+    case false: return str.append("N");
+    case true: return str.append("Y");
     }
 }
 
@@ -168,7 +168,6 @@ unsigned char * add_request_main_part(unsigned char * start,
                                       unsigned seq_no,
                                       const std::string & cross_id,
                                       double price,
-                                      const std::string & symbol,
                                       const Order & agency_order,
                                       unsigned message_length)
 {
