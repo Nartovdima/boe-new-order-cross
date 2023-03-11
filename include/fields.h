@@ -37,7 +37,8 @@ inline unsigned char * encode_binary4(unsigned char * start, const uint32_t valu
     return encode(start, value);
 }
 
-inline unsigned char * encode_alpha(unsigned char * start, const std::string & str, const size_t field_size) {
+inline unsigned char * encode_alpha(unsigned char * start, const std::string & str, const size_t field_size)
+{
     return encode(start, str, field_size);
 }
 

@@ -18,8 +18,8 @@ void encode_new_order_opt_fields(unsigned char * bitfield_start,
 #include "new_order_opt_fields.inl"
 }
 
-unsigned char * encode_new_order_cross_opt_fields(unsigned char * bitfield_start, 
-                                       const std::string & symbol)
+unsigned char * encode_new_order_cross_opt_fields(unsigned char * bitfield_start,
+                                                  const std::string & symbol)
 {
     auto * p = bitfield_start + new_order_cross_opt_bitfield_num();
 #define FIELD(name, bitfield_num, bit)                    \
@@ -29,7 +29,7 @@ unsigned char * encode_new_order_cross_opt_fields(unsigned char * bitfield_start
     return p;
 }
 
-unsigned char * encode_new_order_cross_multileg_opt_fields(unsigned char * bitfield_start, 
+unsigned char * encode_new_order_cross_multileg_opt_fields(unsigned char * bitfield_start,
                                                            const std::string & symbol)
 {
     auto * p = bitfield_start + new_order_cross_multileg_opt_bitfield_num();
@@ -40,7 +40,7 @@ unsigned char * encode_new_order_cross_multileg_opt_fields(unsigned char * bitfi
     return p;
 }
 
-unsigned char * encode_order_opt_fields(unsigned char * start, 
+unsigned char * encode_order_opt_fields(unsigned char * start,
                                         const std::string & algoritmic_indicator)
 {
     auto * p = start;
@@ -74,9 +74,9 @@ uint8_t encode_request_type(const RequestType type)
     return 0;
 }
 
-unsigned char * add_request_header(unsigned char * start, 
-                                   unsigned length, 
-                                   const RequestType type, 
+unsigned char * add_request_header(unsigned char * start,
+                                   unsigned length,
+                                   const RequestType type,
                                    unsigned seq_no)
 {
     *start++ = 0xBA;
@@ -155,7 +155,7 @@ std::string convert_legs(const std::vector<Position> & legs)
     return str;
 }
 
-std::string convert_algoritmic_indicator(const bool algoritmic_indicator) 
+std::string convert_algoritmic_indicator(const bool algoritmic_indicator)
 {
     std::string str;
     switch (algoritmic_indicator) {
