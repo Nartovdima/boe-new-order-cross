@@ -290,7 +290,7 @@ std::vector<unsigned char> create_new_order_cross_request(
     encode_new_order_cross_opt_fields(p, symbol);
     return msg;
 }
-    
+
 std::vector<unsigned char> create_new_order_cross_multileg_request(
         unsigned seq_no,
         const std::string & cross_id,
