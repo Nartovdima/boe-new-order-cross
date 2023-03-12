@@ -51,7 +51,7 @@ unsigned char * encode_new_order_cross_opt_fields(unsigned char * bitfield_start
     auto * p = bitfield_start;
 #define FIELD(name, bitfield_num, bit) \
     p = encode_field_##name(p, name);
-#define CONTRA_FIELD(_, __, ___) ;
+#define CONTRA_FIELD(_, __, ___)
 #include "new_order_cross_opt_fields.inl"
     return p;
 }
@@ -62,7 +62,7 @@ unsigned char * encode_new_order_cross_multileg_opt_fields(unsigned char * bitfi
     auto * p = bitfield_start;
 #define FIELD(name, bitfield_num, bit) \
     p = encode_field_##name(p, name);
-#define CONTRA_FIELD(_, __, ___) ;
+#define CONTRA_FIELD(_, __, ___)
 #include "new_order_cross_multileg_opt_fields.inl"
     return p;
 }
@@ -200,8 +200,7 @@ unsigned char * add_request_main_part(unsigned char * start,
                                       const Order & agency_order,
                                       unsigned message_length)
 {
-    auto * p = start;
-    p = add_request_header(p, message_length - 2, request, seq_no);
+    auto * p = add_request_header(start, message_length - 2, request, seq_no);
     p = encode_text(p, cross_id, 20);
     p = encode_char(p, '1');
     p = encode_char(p, convert_side(agency_order.side));
@@ -211,10 +210,9 @@ unsigned char * add_request_main_part(unsigned char * start,
 
 unsigned char * encode_order_main_part(unsigned char * start, const Order & order)
 {
-    auto * p = start;
-    p = encode_char(p, convert_side(order.side));
+    auto * p = encode_char(start, convert_side(order.side));
     p = encode_binary4(p, static_cast<uint32_t>(order.volume));
-    p = encode_text(p, order.cl_ord_id, 20);
+    p = encode_text(p, order.cl_ord_id, 20); // UB
     p = encode_char(p, convert_capacity(order.capacity));
     p = encode_alpha(p, order.clearing_firm, 4);
     return encode_char(p, convert_account_type(order.account_type));
@@ -222,15 +220,13 @@ unsigned char * encode_order_main_part(unsigned char * start, const Order & orde
 
 unsigned char * encode_order(unsigned char * start, const Order & order)
 {
-    auto * p = start;
-    p = encode_order_main_part(p, order);
+    auto * p = encode_order_main_part(start, order);
     return encode_order_opt_fields(p, convert_algoritmic_indicator(order.algorithmic_indicator));
 }
 
 unsigned char * encode_complex_order(unsigned char * start, const ComplexOrder & order)
 {
-    auto * p = start;
-    p = encode_order_main_part(p, order.order);
+    auto * p = encode_order_main_part(start, order.order);
     return encode_complex_order_opt_fields(p, convert_legs(order.legs), convert_algoritmic_indicator(order.order.algorithmic_indicator));
 }
 
@@ -276,9 +272,8 @@ std::vector<unsigned char> create_new_order_cross_request(
         const std::vector<Order> & contra_orders)
 {
     std::vector<unsigned char> msg;
-    msg.resize(calculate_size(RequestType::NewCross));
-    auto * p = &msg[0];
-    p = add_request_main_part(p, RequestType::NewCross, seq_no, cross_id, price, agency_order, static_cast<unsigned int>(msg.size()));
+    msg.resize(calculate_size(RequestType::NewCross) + order_size() * (contra_orders.size() + 1));
+    auto * p = add_request_main_part(&msg[0], RequestType::NewCross, seq_no, cross_id, price, agency_order, static_cast<unsigned int>(msg.size()));
     p = encode(p, static_cast<uint8_t>(new_order_cross_bitfield_num()));
     p = add_new_order_cross_opt_fields(p);
 
@@ -300,9 +295,8 @@ std::vector<unsigned char> create_new_order_cross_multileg_request(
         const std::vector<ComplexOrder> & contra_orders)
 {
     std::vector<unsigned char> msg;
-    msg.resize(calculate_size(RequestType::NewCrossMultileg));
-    auto * p = &msg[0];
-    p = add_request_main_part(p, RequestType::NewCrossMultileg, seq_no, cross_id, price, agency_order.order, static_cast<unsigned int>(msg.size()));
+    msg.resize(calculate_size(RequestType::NewCrossMultileg) + complex_order_size() * (contra_orders.size() + 1));
+    auto * p = add_request_main_part(&msg[0], RequestType::NewCrossMultileg, seq_no, cross_id, price, agency_order.order, static_cast<unsigned int>(msg.size()));
     p = encode(p, static_cast<uint8_t>(new_order_bitfield_num()));
     p = add_new_order_cross_multileg_opt_fields(p);
 

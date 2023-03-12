@@ -81,6 +81,22 @@ constexpr size_t new_order_cross_multileg_opt_bitfield_size()
             ;
 }
 
+constexpr size_t order_size()
+{
+    return 31
+#define FIELD(name) +name##_field_size
+#include "order_opt_fields.inl"
+            ;
+}
+
+constexpr size_t complex_order_size()
+{
+    return 31
+#define FIELD(name) +name##_field_size
+#include "complex_order_opt_fields.inl"
+            ;
+}
+
 enum class RequestType
 {
     New,
