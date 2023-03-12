@@ -36,12 +36,14 @@ constexpr size_t new_order_opt_fields_size()
 /*
  * New Order Cross
  *  Symbol(1,1)
+ *  Algoritmic_indicator(1, 64)
  */
 
-constexpr size_t new_order_cross_opt_bitfield_num()
+constexpr size_t new_order_cross_bitfield_num()
 {
     return std::max({0
 #define FIELD(_, n, __) , n
+#define CONTRA_FIELD(_, n, __) , n
 #include "new_order_cross_opt_fields.inl"
     });
 }
@@ -50,6 +52,7 @@ constexpr size_t new_order_cross_opt_bitfield_size()
 {
     return 0
 #define FIELD(name, _, __) +name##_field_size
+#define CONTRA_FIELD(name, _, __) +name##_field_size
 #include "new_order_cross_opt_fields.inl"
             ;
 }
@@ -57,12 +60,14 @@ constexpr size_t new_order_cross_opt_bitfield_size()
 /*
  * New Order Cross Multileg
  *  Symbol(1,1)
+ *  Algoritmic_indicator(1, 64)
  */
 
-constexpr size_t new_order_cross_multileg_opt_bitfield_num()
+constexpr size_t new_order_cross_multileg_bitfield_num()
 {
     return std::max({0
 #define FIELD(_, n, __) , n
+#define CONTRA_FIELD(_, n, __) , n
 #include "new_order_cross_multileg_opt_fields.inl"
     });
 }
@@ -71,6 +76,7 @@ constexpr size_t new_order_cross_multileg_opt_bitfield_size()
 {
     return 0
 #define FIELD(name, _, __) +name##_field_size
+#define CONTRA_FIELD(name, _, __) +name##_field_size
 #include "new_order_cross_multileg_opt_fields.inl"
             ;
 }
@@ -92,6 +98,7 @@ constexpr size_t calculate_size(const RequestType type)
     case RequestType::NewCrossMultileg:
         return 45 + new_order_bitfield_num() + new_order_cross_multileg_opt_bitfield_size();
     }
+    return 0;
 }
 
 enum class Side

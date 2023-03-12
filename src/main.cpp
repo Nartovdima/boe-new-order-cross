@@ -43,5 +43,14 @@ int main()
                                                         Capacity::Principal,
                                                         "ACC331");
     print_binary(new_order_msg);
+    std::cout << std::endl;
+    const auto msg = create_new_order_cross_request(
+            13,
+            "CROSS19",
+            1.01,
+            "00Q0kA",
+            {Side::Buy, 999, "A123456x", Capacity::Agency, "CLR1", AccountType::Client, false},
+            {{Side::Sell, 999, "T98765u", Capacity::Principal, "CLR1", AccountType::House, false}});
+    print_binary(msg);
     return 0;
 }
