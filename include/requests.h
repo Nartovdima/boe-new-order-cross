@@ -94,9 +94,9 @@ constexpr size_t calculate_size(const RequestType type)
     case RequestType::New:
         return 36 + new_order_bitfield_num() + new_order_opt_fields_size();
     case RequestType::NewCross:
-        return 55 + new_order_bitfield_num() + new_order_cross_opt_bitfield_size();
+        return 45 + new_order_cross_bitfield_num() + new_order_cross_opt_bitfield_size();
     case RequestType::NewCrossMultileg:
-        return 55 + new_order_bitfield_num() + new_order_cross_multileg_opt_bitfield_size();
+        return 45 + new_order_cross_multileg_bitfield_num() + new_order_cross_multileg_opt_bitfield_size();
     }
     return 0;
 }
