@@ -159,9 +159,16 @@ std::string convert_algoritmic_indicator(const bool algoritmic_indicator)
 {
     std::string str;
     switch (static_cast<int>(algoritmic_indicator)) {
-    case 0: return str.append("N");
-    case 1: return str.append("Y");
+    case 0: {
+        str.append("N");
+        break;
     }
+    case 1: {
+        str.append("Y");
+        break;
+    }
+    }
+    return str;
 }
 
 unsigned char * add_request_main_part(unsigned char * start,
