@@ -158,9 +158,9 @@ std::string convert_legs(const std::vector<Position> & legs)
 std::string convert_algoritmic_indicator(const bool algoritmic_indicator)
 {
     std::string str;
-    switch (algoritmic_indicator) {
-    case false: return str.append("N");
-    case true: return str.append("Y");
+    switch (static_cast<int>(algoritmic_indicator)) {
+    case 0: return str.append("N");
+    case 1: return str.append("Y");
     }
 }
 
@@ -249,7 +249,7 @@ std::vector<unsigned char> create_new_order_cross_request(
     std::vector<unsigned char> msg;
     msg.resize(calculate_size(RequestType::NewCross));
     auto * p = &msg[0];
-    p = add_request_main_part(p, seq_no, cross_id, price, symbol, agency_order, msg.size());
+    p = add_request_main_part(p, seq_no, cross_id, price, agency_order, msg.size());
     p = encode(p, static_cast<uint8_t>(new_order_bitfield_num()));
     p = encode_new_order_cross_opt_fields(p, symbol);
     p = encode_binary2(p, static_cast<uint16_t>(contra_orders.size() + 1));
@@ -271,7 +271,7 @@ std::vector<unsigned char> create_new_order_cross_multileg_request(
     std::vector<unsigned char> msg;
     msg.resize(calculate_size(RequestType::NewCrossMultileg));
     auto * p = &msg[0];
-    p = add_request_main_part(p, seq_no, cross_id, price, symbol, agency_order.order, msg.size());
+    p = add_request_main_part(p, seq_no, cross_id, price, agency_order.order, msg.size());
     p = encode(p, static_cast<uint8_t>(new_order_bitfield_num()));
     p = encode_new_order_cross_opt_fields(p, symbol);
     p = encode_binary2(p, static_cast<uint16_t>(contra_orders.size() + 1));
