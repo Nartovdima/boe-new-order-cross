@@ -12,8 +12,8 @@ FIELD(price, price, double)
 FIELD(side, char, char)
 VAR_FIELD(symbol, 8)
 FIELD(time_in_force, char, char)
-VAR_FIELD(algoritmic_indicator, 1)
 VAR_FIELD(leg_position_effects, 12)
+VAR_FIELD(algoritmic_indicator, 1)	
 #undef FIELD
 #undef VAR_FIELD
 

@@ -287,10 +287,10 @@ std::vector<unsigned char> create_new_order_cross_request(
     for (const Order & contra_order : contra_orders) {
         p = encode_order(p, contra_order);
     }
-    p = encode_new_order_cross_opt_fields(p, symbol);
+    encode_new_order_cross_opt_fields(p, symbol);
     return msg;
 }
-
+    
 std::vector<unsigned char> create_new_order_cross_multileg_request(
         unsigned seq_no,
         const std::string & cross_id,
@@ -311,6 +311,6 @@ std::vector<unsigned char> create_new_order_cross_multileg_request(
     for (const ComplexOrder & contra_order : contra_orders) {
         p = encode_complex_order(p, contra_order);
     }
-    p = encode_new_order_cross_multileg_opt_fields(p, symbol);
+    encode_new_order_cross_multileg_opt_fields(p, symbol);
     return msg;
 }
