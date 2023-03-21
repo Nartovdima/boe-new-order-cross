@@ -27,9 +27,19 @@ inline unsigned char * encode_char(unsigned char * start, const char ch)
     return encode(start, static_cast<uint8_t>(ch));
 }
 
+inline unsigned char * encode_binary2(unsigned char * start, const uint16_t value)
+{
+    return encode(start, value);
+}
+
 inline unsigned char * encode_binary4(unsigned char * start, const uint32_t value)
 {
     return encode(start, value);
+}
+
+inline unsigned char * encode_alpha(unsigned char * start, const std::string & str, const size_t field_size)
+{
+    return encode(start, str, field_size);
 }
 
 inline unsigned char * encode_price(unsigned char * start, const double value)
